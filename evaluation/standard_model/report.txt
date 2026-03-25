@@ -1,0 +1,37 @@
+======================================================================
+  SciFact Misinformation Detection — Evaluation Report
+======================================================================
+
+  Claims evaluated : 300
+  Errors excluded  : 0
+
+── Classification ──────────────────────────────────────────────────
+  Accuracy         : 0.7800
+  Macro F1         : 0.7772
+
+  Per-class breakdown:
+                 precision    recall  f1-score   support
+
+       SUPPORTS       0.78      0.87      0.82       124
+        REFUTES       0.72      0.91      0.81        64
+NOT_ENOUGH_INFO       0.84      0.61      0.70       112
+
+       accuracy                           0.78       300
+      macro avg       0.78      0.79      0.78       300
+   weighted avg       0.79      0.78      0.77       300
+
+── Retrieval ────────────────────────────────────────────────────────
+  Avg Precision@k  : 0.1872
+  Avg Recall@k     : 0.8685
+  Hit Rate (≥1 gold doc retrieved): 0.8777
+
+── Error summary ────────────────────────────────────────────────────
+  Total errors     : 66 / 300 (22.0%)
+    NOT_ENOUGH_INFO      → SUPPORTS              (28x)
+    NOT_ENOUGH_INFO      → REFUTES               (16x)
+    SUPPORTS             → NOT_ENOUGH_INFO       (10x)
+    SUPPORTS             → REFUTES               (6x)
+    REFUTES              → NOT_ENOUGH_INFO       (3x)
+    REFUTES              → SUPPORTS              (3x)
+
+======================================================================

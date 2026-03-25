@@ -232,7 +232,7 @@ outputs/evaluation/
         └── score_vs_correctness.png          # Retrieval score for correct vs wrong
 ```
 
-> See the full analysis report: [outputs/evaluation/standard_model/report_italiano.md](outputs/evaluation/standard_model/report_italiano.md)
+> See the full analysis report: [outputs/evaluation/standard_model/report_italiano.md](evaluation/standard_model/report_italiano.md)
 
 ### Embedding Models
 
