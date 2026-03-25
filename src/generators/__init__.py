@@ -6,7 +6,10 @@ Provides RAG generators that combine retrievers with LLMs:
 - GPT_RAG: Uses OpenAI ChatGPT API
 """
 
-from open_RAG.src.generators.open_rag import OpenRAG
-from open_RAG.src.generators.gpt_rag import GPT_RAG
+try:
+    from .open_rag import OpenRAG
+    from .gpt_rag import GPT_RAG
+except Exception:
+    pass
 
 __all__ = ["OpenRAG", "GPT_RAG"]

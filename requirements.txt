@@ -20,3 +20,9 @@ python-dotenv>=1.0.0
 
 # OpenAI API
 openai>=1.0.0
+
+# Google Gemini (web automation — no API key required)
+gemini-webapi
+
+# Evaluation metrics
+scikit-learn>=1.3.0

@@ -12,6 +12,15 @@ wheels/
 # User documents (private data)
 documents/
 
+# SciFact dataset (redistributed data)
+data/
+
+# FAISS index files (large binaries, reproducible via indexing.py)
+indices/
+
+# Pipeline outputs (derived data)
+outputs/
+
 # Environment variables (contains secrets)
 .env
 
