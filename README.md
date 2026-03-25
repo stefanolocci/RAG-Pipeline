@@ -1,4 +1,4 @@
-# Open RAG
+# RAG Pipeline
 
 A modular **Retrieval-Augmented Generation (RAG)** system with two independent pipelines:
 
@@ -29,7 +29,7 @@ A modular **Retrieval-Augmented Generation (RAG)** system with two independent p
 ## Project Structure
 
 ```
-open_RAG/
+RAG-Pipeline/
 │
 ├── main.py                          # Generic RAG CLI entry point
 ├── requirements.txt
@@ -39,6 +39,7 @@ open_RAG/
 │   ├── config.py                    # All settings and paths
 │   │
 │   ├── retrievers/                  # Generic RAG retrievers
+│   │   ├── base.py                  # Abstract base retriever
 │   │   ├── faiss_retriever.py       # FAISS dense retrieval
 │   │   └── bm25_retriever.py        # BM25 sparse retrieval
 │   │
@@ -46,6 +47,12 @@ open_RAG/
 │   │   ├── open_rag.py              # HuggingFace open-source LLMs
 │   │   ├── gpt_rag.py               # OpenAI API
 │   │   └── gemini_api.py            # Gemini web automation
+│   │
+│   ├── knowledge_base/              # Document loading utilities
+│   │   └── loader.py
+│   │
+│   ├── utils/
+│   │   └── text_processing.py
 │   │
 │   ├── gemini_client.py             # Embedding (local ST) + generation (Gemini)
 │   ├── prompts.py                   # Prompt templates
@@ -58,23 +65,27 @@ open_RAG/
 ├── data/                            # SciFact dataset (gitignored)
 │   ├── corpus.jsonl
 │   ├── claims_dev.jsonl
-│   └── claims_train.jsonl
+│   ├── claims_train.jsonl
+│   ├── claims_test.jsonl
+│   ├── cross_validation/            # 5-fold CV splits
+│   │   ├── fold_1/ … fold_5/
+│   └── final_dataset/
+│       └── scifact_RAG_prediction_explained.jsonl
 │
 ├── indices/                         # FAISS indices (gitignored)
 │   ├── scifact_faiss.index
-│   ├── doc_id_map.json
-│   ├── scifact_faiss_biomodel.index
-│   └── doc_id_map_biomodel.json
+│   └── doc_id_map.json
 │
 ├── outputs/                         # Pipeline outputs (gitignored)
 │   ├── predictions.jsonl
 │   ├── detailed_log.jsonl
 │   └── evaluation/
-│       ├── report.txt
-│       ├── report_italiano.md       # Full Italian analysis report
-│       ├── classification/
-│       ├── retrieval/
-│       └── error_analysis/
+│       └── standard_model/
+│           ├── report.txt
+│           ├── report_italiano.md   # Full Italian analysis report
+│           ├── classification/
+│           ├── retrieval/
+│           └── error_analysis/
 │
 └── documents/                       # Generic RAG documents (gitignored)
 ```
@@ -85,8 +96,8 @@ open_RAG/
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-username/open_RAG.git
-cd open_RAG
+git clone https://github.com/your-username/RAG-Pipeline.git
+cd RAG-Pipeline
 
 # Install with uv (recommended)
 uv sync
@@ -184,9 +195,6 @@ uv run src/run_pipeline.py
 
 # Default model + cross-encoder reranking
 uv run src/run_pipeline.py --reranking
-
-# Default model + reranking
-uv run src/run_pipeline.py --reranking
 ```
 
 Each configuration writes to its own output files so runs never overwrite each other:
@@ -194,9 +202,7 @@ Each configuration writes to its own output files so runs never overwrite each o
 | Flags | Predictions | Log |
 |-------|-------------|-----|
 | *(none)* | `outputs/predictions.jsonl` | `outputs/detailed_log.jsonl` |
-| `--model biomodel` | `outputs/predictions_biomodel.jsonl` | `outputs/detailed_log_biomodel.jsonl` |
 | `--reranking` | `outputs/predictions_reranking.jsonl` | `outputs/detailed_log_reranking.jsonl` |
-| `--model biomodel --reranking` | `outputs/predictions_biomodel_reranking.jsonl` | `outputs/detailed_log_biomodel_reranking.jsonl` |
 
 **Resume support:** interrupted runs resume automatically, retrying only failed claims.
 
@@ -210,31 +216,31 @@ Generates a full evaluation report with visualisations in `outputs/evaluation/`:
 
 ```
 outputs/evaluation/
-├── report.txt                            # Numeric summary
-├── report_italiano.md                    # Full analysis in Italian (with figures)
-├── classification/
-│   ├── confusion_matrix.png              # Normalised + raw counts
-│   ├── per_class_metrics.png             # Precision / Recall / F1 per class
-│   └── label_distribution.png           # Gold vs predicted distribution
-├── retrieval/
-│   ├── precision_recall_at_k.png         # P@k and R@k by label
-│   ├── score_distribution.png            # Top-1 cosine score by label (KDE)
-│   └── hit_rate_by_label.png             # Fraction with ≥1 gold doc retrieved
-└── error_analysis/
-    ├── misclassification_heatmap.png     # Error-only confusion matrix
-    └── score_vs_correctness.png          # Retrieval score for correct vs wrong
+└── standard_model/
+    ├── report.txt                            # Numeric summary
+    ├── report_italiano.md                    # Full analysis in Italian (with figures)
+    ├── classification/
+    │   ├── confusion_matrix.png              # Normalised + raw counts
+    │   ├── per_class_metrics.png             # Precision / Recall / F1 per class
+    │   └── label_distribution.png           # Gold vs predicted distribution
+    ├── retrieval/
+    │   ├── precision_recall_at_k.png         # P@k and R@k by label
+    │   ├── score_distribution.png            # Top-1 cosine score by label (KDE)
+    │   └── hit_rate_by_label.png             # Fraction with ≥1 gold doc retrieved
+    └── error_analysis/
+        ├── misclassification_heatmap.png     # Error-only confusion matrix
+        └── score_vs_correctness.png          # Retrieval score for correct vs wrong
 ```
 
-> See the full analysis report: [outputs/evaluation/report_italiano.md](outputs/evaluation/report_italiano.md)
+> See the full analysis report: [outputs/evaluation/standard_model/report_italiano.md](outputs/evaluation/standard_model/report_italiano.md)
 
 ### Embedding Models
 
 | Key | Model | Dim | Notes |
 |-----|-------|----:|-------|
 | `default` | `sentence-transformers/all-MiniLM-L6-v2` | 384 | Fast, general-purpose |
-| `biomodel` | `Charangan/MedBERT` | 768 | BERT pre-trained on medical text |
 
-Both models run **entirely locally** — no API calls for embeddings.
+The model runs **entirely locally** — no API calls for embeddings.
 
 ### Reranking
 
@@ -258,7 +264,7 @@ Results from the baseline configuration (default model, no reranking) on 300 dev
 | `REFUTES` | 0.72 | 0.91 | 0.81 |
 | `NOT_ENOUGH_INFO` | 0.84 | 0.61 | 0.70 |
 
-> Full analysis with charts and commentary: [outputs/evaluation/report_italiano.md](outputs/evaluation/report_italiano.md)
+> Full analysis with charts and commentary: [outputs/evaluation/standard_model/report_italiano.md](outputs/evaluation/standard_model/report_italiano.md)
 
 ---
 
@@ -269,7 +275,6 @@ All settings live in `src/config.py`:
 | Constant | Default | Description |
 |----------|---------|-------------|
 | `SENTENCE_MODEL_NAME` | `all-MiniLM-L6-v2` | Default embedding model |
-| `BIO_EMBEDDING_MODEL` | `Charangan/MedBERT` | Bio embedding model |
 | `GENERATION_MODEL` | `gemini-2.5-flash` | LLM for classification |
 | `CROSS_ENCODER_MODEL` | `cross-encoder/ms-marco-MiniLM-L-6-v2` | Reranking model |
 | `TOP_K` | `5` | Documents returned to LLM |
