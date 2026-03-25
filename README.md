@@ -9,8 +9,7 @@ A modular **Retrieval-Augmented Generation (RAG)** system with two independent p
 
 ## Table of Contents
 
-1. [Project Structure](#project-structure)
-2. [Installation](#installation)
+1. [Installation](#installation)
 3. [Generic RAG Pipeline](#generic-rag-pipeline)
 4. [SciFact Verification Pipeline](#scifact-verification-pipeline)
    - [Architecture](#architecture)
@@ -23,72 +22,6 @@ A modular **Retrieval-Augmented Generation (RAG)** system with two independent p
    - [Results](#results)
 5. [Configuration](#configuration)
 6. [Environment Variables](#environment-variables)
-
----
-
-## Project Structure
-
-```
-RAG-Pipeline/
-│
-├── main.py                          # Generic RAG CLI entry point
-├── requirements.txt
-├── pyproject.toml
-│
-├── src/
-│   ├── config.py                    # All settings and paths
-│   │
-│   ├── retrievers/                  # Generic RAG retrievers
-│   │   ├── base.py                  # Abstract base retriever
-│   │   ├── faiss_retriever.py       # FAISS dense retrieval
-│   │   └── bm25_retriever.py        # BM25 sparse retrieval
-│   │
-│   ├── generators/                  # Generic RAG generators
-│   │   ├── open_rag.py              # HuggingFace open-source LLMs
-│   │   ├── gpt_rag.py               # OpenAI API
-│   │   └── gemini_api.py            # Gemini web automation
-│   │
-│   ├── knowledge_base/              # Document loading utilities
-│   │   └── loader.py
-│   │
-│   ├── utils/
-│   │   └── text_processing.py
-│   │
-│   ├── gemini_client.py             # Embedding (local ST) + generation (Gemini)
-│   ├── prompts.py                   # Prompt templates
-│   ├── indexing.py                  # Build FAISS index from SciFact corpus
-│   ├── retriever.py                 # SciFact FAISS retriever + reranking
-│   ├── claim_verifier.py            # End-to-end claim verification
-│   ├── run_pipeline.py              # Batch pipeline over dev claims
-│   └── evaluate.py                  # Metrics + visualisations
-│
-├── data/                            # SciFact dataset (gitignored)
-│   ├── corpus.jsonl
-│   ├── claims_dev.jsonl
-│   ├── claims_train.jsonl
-│   ├── claims_test.jsonl
-│   ├── cross_validation/            # 5-fold CV splits
-│   │   ├── fold_1/ … fold_5/
-│   └── final_dataset/
-│       └── scifact_RAG_prediction_explained.jsonl
-│
-├── indices/                         # FAISS indices (gitignored)
-│   ├── scifact_faiss.index
-│   └── doc_id_map.json
-│
-├── outputs/                         # Pipeline outputs (gitignored)
-│   ├── predictions.jsonl
-│   ├── detailed_log.jsonl
-│   └── evaluation/
-│       └── standard_model/
-│           ├── report.txt
-│           ├── report_italiano.md   # Full Italian analysis report
-│           ├── classification/
-│           ├── retrieval/
-│           └── error_analysis/
-│
-└── documents/                       # Generic RAG documents (gitignored)
-```
 
 ---
 
@@ -211,28 +144,7 @@ Each configuration writes to its own output files so runs never overwrite each o
 ```bash
 uv run src/evaluate.py
 ```
-
-Generates a full evaluation report with visualisations in `outputs/evaluation/`:
-
-```
-outputs/evaluation/
-└── standard_model/
-    ├── report.txt                            # Numeric summary
-    ├── report_italiano.md                    # Full analysis in Italian (with figures)
-    ├── classification/
-    │   ├── confusion_matrix.png              # Normalised + raw counts
-    │   ├── per_class_metrics.png             # Precision / Recall / F1 per class
-    │   └── label_distribution.png           # Gold vs predicted distribution
-    ├── retrieval/
-    │   ├── precision_recall_at_k.png         # P@k and R@k by label
-    │   ├── score_distribution.png            # Top-1 cosine score by label (KDE)
-    │   └── hit_rate_by_label.png             # Fraction with ≥1 gold doc retrieved
-    └── error_analysis/
-        ├── misclassification_heatmap.png     # Error-only confusion matrix
-        └── score_vs_correctness.png          # Retrieval score for correct vs wrong
-```
-
-> See the full analysis report: [outputs/evaluation/standard_model/report_italiano.md](evaluation/standard_model/report_italiano.md)
+> See the full analysis report: [evaluation/standard_model/report_italiano.md](evaluation/standard_model/report_italiano.md)
 
 ### Embedding Models
 
@@ -264,7 +176,7 @@ Results from the baseline configuration (default model, no reranking) on 300 dev
 | `REFUTES` | 0.72 | 0.91 | 0.81 |
 | `NOT_ENOUGH_INFO` | 0.84 | 0.61 | 0.70 |
 
-> Full analysis with charts and commentary: [outputs/evaluation/standard_model/report_italiano.md](outputs/evaluation/standard_model/report_italiano.md)
+> Full analysis with charts and commentary: [evaluation/standard_model/report_italiano.md](evaluation/standard_model/report_italiano.md)
 
 ---
 

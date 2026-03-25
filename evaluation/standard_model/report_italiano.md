@@ -13,8 +13,7 @@
 3. [Analisi degli Errori](#3-analisi-degli-errori)
 4. [Qualità del Retriever](#4-qualità-del-retriever)
 5. [Punti di Forza e Limiti](#5-punti-di-forza-e-limiti)
-6. [Raccomandazioni](#6-raccomandazioni)
-7. [Conclusioni](#7-conclusioni)
+6. [Conclusioni](#7-conclusioni)
 
 ---
 
@@ -183,34 +182,7 @@ Le predizioni **corrette** mostrano score di retrieval mediamente più alti risp
 
 ---
 
-## 6. Raccomandazioni
-
-### 🔴 Priorità Alta
-
-1. **Sostituire l'embedding con un modello biomedico**
-   `BAAI/bge-large-en-v1.5` o `cambridgeltl/SapBERT-from-PubMedBERT-fulltext`
-   → Impatto atteso: **+3–8% F1**
-
-2. **Calibrare il prompt per la classe NEI**
-   Aggiungere istruzioni esplicite:
-   *"If the evidence does not directly address the claim, choose NOT_ENOUGH_INFO even if partially related documents are present."*
-   → Impatto atteso: **+5–10% recall su NEI**
-
-3. **Aumentare k da 5 a 10**
-   → Hit rate attesa: +5% → recall classificazione +2–3%
-
-### 🟡 Priorità Media
-
-4. **Aggiungere few-shot examples** (2–3 per classe) per ancorare il formato e ridurre ambiguità
-5. **Ridurre la temperature** del LLM (0.1–0.2) per maggiore determinismo
-
-### 🟢 Priorità Bassa
-
-6. **Cross-encoder reranking** dopo FAISS per migliorare precision@k senza aumentare k
-
----
-
-## 7. Conclusioni
+## 6. Conclusioni
 
 Il sistema RAG per il rilevamento della disinformazione scientifica dimostra **prestazioni solide per un approccio zero-shot** su SciFact: accuracy 78%, macro F1 0.777, con comportamento equilibrato su tutte e tre le classi.
 
@@ -223,4 +195,4 @@ Migliorare il componente di retrieval con embedding biomedici specializzati rapp
 ---
 
 *Report generato automaticamente dalla pipeline di valutazione SciFact.*
-*File di riferimento: `outputs/evaluation/`*
+*File di riferimento: `evaluation/*`*
